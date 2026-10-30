@@ -5,7 +5,7 @@ Mailbox Order Manager: a Next.js (App Router, strict TS) + PostgreSQL internal t
 ## Read first
 
 1. `Task.md` — scope, deliverables, priority order, review weights.
-2. `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md` (ADR-001–016, all **Accepted**), `docs/IMPLEMENTATION_PLAN.md`, `docs/TEST_PLAN.md`.
+2. `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md` (ADR-001–018, all **Accepted**), `docs/IMPLEMENTATION_PLAN.md`, `docs/TEST_PLAN.md`.
 3. `docs/AI_WORKFLOW.md` for approval gates and which doc owns which change.
 
 Do not silently change an accepted ADR or the plan. Ask before any major architectural decision or scope change.
@@ -47,11 +47,11 @@ Dependencies point downward; each layer has one job.
 ```
 src/app/            pages + route handlers: parse, auth, validate, call service, serialize. NO business logic
 src/auth/           Auth.js Credentials (JWT); requireActor/requireCustomer/requireAdmin
-src/services/       use cases (create-order, customer-orders, presenters, planned: retry, provisioning)
+src/services/       use cases (create-order, retry-order, provisioning-service, customer/admin orders, presenters)
 src/domain/orders/  status enums + transition table (state machine). No DB/Next imports
 src/repositories/   Drizzle queries, customer-scoped reads, transaction-aware writes, audit appends
-src/providers/      (planned) provider Strategy + durable mock ledger
-src/worker/         (planned) polling entry point
+src/providers/      provider Strategy + durable mock ledger
+src/worker/         polling entry point (`--once` supported)
 src/db/             schema, client, seed; migrations in drizzle/
 src/lib/            env, zod validation, AppError/Errors, api helpers (`handle`, `errorResponse`)
 src/components/ui/  shadcn/ui primitives (add only what screens use)
@@ -71,7 +71,7 @@ Patterns to keep (and name in `docs/ARCHITECTURE.md`): state machine, service + 
 ## Conventions
 
 - Strict TypeScript; `@/` aliases `src/`. Match surrounding style; no speculative abstractions.
-- Validate all input with zod at the boundary (`src/lib/validation.ts`); route handlers wrap logic with `handle()`.
+- Validate all input with zod at the boundary (`src/lib/validation.ts`); route handlers wrap logic in try/catch and return `errorResponse(error)`.
 - Tests first for domain/reliability behavior. PostgreSQL (not mocks) proves idempotency, audit atomicity, claim fencing and worker concurrency. Provider outcomes must be controllable in tests (no random-failure assertions).
 - Use `pnpm`, not npm/yarn. Don't commit `.env*` (except the `.example` files).
 
@@ -80,11 +80,11 @@ Patterns to keep (and name in `docs/ARCHITECTURE.md`): state machine, service + 
 - **Commits**: small, meaningful, one per verified slice; no co-author trailers. Never one giant commit. Don't push or publish without explicit approval.
 - **`docs/AI_WORKLOG.md`**: append factual rows only — phase, key prompts (3–5), real times, places Claude was wrong and how it was fixed, hand edits. Don't invent errors or times. Claude Code is the only AI tool (TD-05).
 - Update docs per the sync table in `docs/AI_WORKFLOW.md`; record meaningful tradeoffs in `docs/DECISIONS.md`; mark plan tasks VERIFIED only with command output recorded.
-- Track elapsed time against the 4h cap (~3h45m used so far; see worklog). At the cap, stop and list unfinished work in priority order: order creation/state machine → provider abstraction/worker → admin list/retry/audit → customer views → tests.
-- Deliverables still owed: `README.md` (clean-clone run in <10 min, logins, tests, limitations, demo link at top), `docs/ARCHITECTURE.md` pattern section (location, why, rejected alternative), demo video.
+- Track elapsed time against the 4h cap (~4h used so far, cap reached; see worklog). At the cap, stop and list unfinished work in priority order: order creation/state machine → provider abstraction/worker → admin list/retry/audit → customer views → tests.
+- Deliverables: `README.md` (done, demo link at top), `docs/ARCHITECTURE.md` pattern section (done), demo video (done, Loom).
 
 ## Current status (update as work lands)
 
-Implemented and verified: schema/migrations/seed, state machine (16 unit tests), idempotent create, provider Strategy + durable ledger, safe worker (lease + fencing), admin list/retry/audit, login, customer and admin screens (12 integration tests; HTTP smoke on a production build).
-Demo video is linked at the top of the README. Remaining: final delivery audit (`delivery-audit` skill), browser click-through of the UI, worklog time totals.
+Implemented and verified: schema/migrations/seed, state machine (23 unit tests incl. guards and pager), idempotent create, provider Strategy + durable ledger, safe worker (lease + fencing), admin list/retry/audit, login, customer and admin screens (15 integration tests; HTTP smoke on a production build).
+Demo video is linked at the top of the README. Remaining: re-run the `delivery-audit` checklist before any change, and a manual browser click-through of the UI.
 Notes: Postgres is published on host port 5433 (5432 is used by another local container). Do not use broad `pkill`; stop servers by port.

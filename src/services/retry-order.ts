@@ -1,12 +1,13 @@
-import { and, eq, sql } from "drizzle-orm";
-
 import { db } from "@/db/client";
-import { mailboxes, orders } from "@/db/schema";
-import { assertTransition } from "@/domain/orders/state-machine";
 import { InvalidTransitionError } from "@/domain/orders/errors";
+import { assertTransition } from "@/domain/orders/state-machine";
 import { Errors } from "@/lib/errors";
 import { appendAuditEvent } from "@/repositories/audit-repository";
-import { findOrderById } from "@/repositories/order-repository";
+import {
+  findOrderById,
+  lockOrderStatus,
+  requeueFailedOrder,
+} from "@/repositories/order-repository";
 import { presentOrder } from "./order-presenter";
 
 /**
@@ -15,18 +16,14 @@ import { presentOrder } from "./order-presenter";
  */
 export async function retryOrder(adminId: string, orderId: string) {
   return db.transaction(async (tx) => {
-    const [current] = await tx
-      .select({ status: orders.status })
-      .from(orders)
-      .where(eq(orders.id, orderId))
-      .for("update");
+    const status = await lockOrderStatus(tx, orderId);
 
-    if (!current) {
+    if (!status) {
       throw Errors.notFound("Order");
     }
 
     try {
-      assertTransition(current.status, "PENDING");
+      assertTransition(status, "PENDING");
     } catch (error) {
       if (error instanceof InvalidTransitionError) {
         throw Errors.invalidTransition(error.from, error.to);
@@ -34,26 +31,7 @@ export async function retryOrder(adminId: string, orderId: string) {
       throw error;
     }
 
-    await tx
-      .update(orders)
-      .set({
-        status: "PENDING",
-        claimToken: null,
-        claimExpiresAt: null,
-        updatedAt: new Date(),
-      })
-      .where(eq(orders.id, orderId));
-
-    await tx
-      .update(mailboxes)
-      .set({
-        status: "PENDING",
-        provisionAttempt: sql`${mailboxes.provisionAttempt} + 1`,
-        provisioningKey: sql`gen_random_uuid()`,
-        failureCode: null,
-        updatedAt: new Date(),
-      })
-      .where(and(eq(mailboxes.orderId, orderId), eq(mailboxes.status, "FAILED")));
+    await requeueFailedOrder(tx, orderId);
 
     await appendAuditEvent(tx, {
       orderId,

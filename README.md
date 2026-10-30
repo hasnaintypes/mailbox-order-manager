@@ -47,8 +47,8 @@ API: `POST/GET /api/orders` (requires `Idempotency-Key` header), `GET /api/order
 ## Tests
 
 ```bash
-pnpm test:unit          # state machine (no DB)
-pnpm test:integration   # real PostgreSQL via .env.test: order creation/idempotency, worker, retry, admin list
+pnpm test:unit          # state machine, actor guards, pager (no DB)
+pnpm test:integration   # real PostgreSQL via .env.test: order creation/idempotency, worker, retry, admin list, customer isolation
 pnpm typecheck && pnpm lint && pnpm build
 ```
 
@@ -60,5 +60,6 @@ pnpm typecheck && pnpm lint && pnpm build
 
 - Provider integrations are mocks; lease recovery gives at-least-once execution, made safe by the durable per-attempt operation ledger.
 - Login has no rate limiting; this is a local/internal assessment tool.
-- No UI tests; screens were smoke-tested over HTTP and by hand.
+- No automated UI tests; screens were smoke-tested over HTTP and by hand. Route-level authorization is covered by guard unit tests and service-level isolation tests, not by end-to-end HTTP tests.
+- The customer order list is not paginated (it loads up to 100 orders); pagination is implemented for the admin list as the brief requires.
 - Worker processes mailboxes of one order sequentially (a 50-mailbox order takes ~2 minutes at default delay).

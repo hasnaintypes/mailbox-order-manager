@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import {
@@ -95,4 +95,76 @@ export async function countOrdersByStatus() {
     .groupBy(orders.status);
 
   return rows.flatMap((row) => Array<OrderStatus>(row.total).fill(row.status));
+}
+
+export async function insertOrderWithMailboxes(
+  executor: DbExecutor,
+  values: {
+    customerId: string;
+    domain: string;
+    provider: ProviderName;
+    mailboxCount: number;
+  },
+) {
+  const [order] = await executor.insert(orders).values(values).returning();
+
+  if (!order) {
+    throw new Error("Order insertion returned no row.");
+  }
+
+  await executor.insert(mailboxes).values(
+    Array.from({ length: values.mailboxCount }, (_, index) => ({
+      orderId: order.id,
+      ordinal: index + 1,
+    })),
+  );
+
+  return order;
+}
+
+export function insertIdempotencyRecord(
+  executor: DbExecutor,
+  values: {
+    customerId: string;
+    idempotencyKey: string;
+    requestFingerprint: string;
+    orderId: string;
+  },
+) {
+  return executor.insert(idempotencyRecords).values(values);
+}
+
+/** Locks the order row and returns its status; null when the order does not exist. */
+export async function lockOrderStatus(executor: DbExecutor, orderId: string) {
+  const [row] = await executor
+    .select({ status: orders.status })
+    .from(orders)
+    .where(eq(orders.id, orderId))
+    .for("update");
+
+  return row?.status ?? null;
+}
+
+/** FAILED -> PENDING: clears the claim and gives failed mailboxes a fresh attempt key. */
+export async function requeueFailedOrder(executor: DbExecutor, orderId: string) {
+  await executor
+    .update(orders)
+    .set({
+      status: "PENDING",
+      claimToken: null,
+      claimExpiresAt: null,
+      updatedAt: new Date(),
+    })
+    .where(eq(orders.id, orderId));
+
+  await executor
+    .update(mailboxes)
+    .set({
+      status: "PENDING",
+      provisionAttempt: sql`${mailboxes.provisionAttempt} + 1`,
+      provisioningKey: sql`gen_random_uuid()`,
+      failureCode: null,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(mailboxes.orderId, orderId), eq(mailboxes.status, "FAILED")));
 }

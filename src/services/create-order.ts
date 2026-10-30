@@ -1,13 +1,14 @@
 import { createHash } from "node:crypto";
 
 import { db } from "@/db/client";
-import { idempotencyRecords, mailboxes, orders } from "@/db/schema";
 import { Errors } from "@/lib/errors";
 import type { CreateOrderInput } from "@/lib/validation";
 import { appendAuditEvent } from "@/repositories/audit-repository";
 import {
   findIdempotencyRecord,
   findOrderById,
+  insertIdempotencyRecord,
+  insertOrderWithMailboxes,
 } from "@/repositories/order-repository";
 import { presentOrder } from "./order-presenter";
 
@@ -97,26 +98,12 @@ export async function createOrder(
 
   try {
     return await db.transaction(async (transaction) => {
-      const [order] = await transaction
-        .insert(orders)
-        .values({
-          customerId: command.customerId,
-          domain: command.input.domain,
-          provider: command.input.provider,
-          mailboxCount: command.input.mailboxCount,
-        })
-        .returning();
-
-      if (!order) {
-        throw new Error("Order insertion returned no row.");
-      }
-
-      await transaction.insert(mailboxes).values(
-        Array.from({ length: command.input.mailboxCount }, (_, index) => ({
-          orderId: order.id,
-          ordinal: index + 1,
-        })),
-      );
+      const order = await insertOrderWithMailboxes(transaction, {
+        customerId: command.customerId,
+        domain: command.input.domain,
+        provider: command.input.provider,
+        mailboxCount: command.input.mailboxCount,
+      });
 
       await appendAuditEvent(transaction, {
         orderId: order.id,
@@ -126,7 +113,7 @@ export async function createOrder(
         actorUserId: command.customerId,
       });
 
-      await transaction.insert(idempotencyRecords).values({
+      await insertIdempotencyRecord(transaction, {
         customerId: command.customerId,
         idempotencyKey: command.idempotencyKey,
         requestFingerprint,

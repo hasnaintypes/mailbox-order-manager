@@ -2,7 +2,7 @@
 
 ## Status
 
-Unit (16) and PostgreSQL integration (12) suites pass: `pnpm test:unit`, `pnpm test:integration`. UI is smoke-tested over HTTP only.
+Unit (23) and PostgreSQL integration (15) suites pass: `pnpm test:unit`, `pnpm test:integration`. UI is smoke-tested over HTTP only.
 
 ## Required assessment tests
 
@@ -18,8 +18,8 @@ Unit (16) and PostgreSQL integration (12) suites pass: `pnpm test:unit`, `pnpm t
 | T-01 | FR-03, FR-13 | Unit/integration | Valid input creates; invalid provider/missing field/count outside 1–50 returns consistent error. | Planned |
 | T-02 | FR-04 | Integration | Repeated same creation produces one order only. | VERIFIED — create-order.test.ts |
 | T-03 | AQ-03, ADR-003 | Integration | Same idempotency key with different payload is rejected. | VERIFIED — create-order.test.ts |
-| T-04 | FR-02 | Integration/e2e | Customer cannot list/view another customer's order; admin can access both. | Planned |
-| T-05 | FR-01, FR-02, FR-10 | Integration/e2e | Unauthenticated request rejected; customer cannot retry; admin can retry eligible failure. | Planned |
+| T-04 | FR-02 | Integration/e2e | Customer cannot list/view another customer's order; admin can access both. | VERIFIED — access-control.test.ts (service level) |
+| T-05 | FR-01, FR-02, FR-10 | Integration/e2e | Unauthenticated request rejected; customer cannot retry; admin can retry eligible failure. | VERIFIED — actor-guards.test.ts (guards) + retry-and-admin.test.ts |
 | T-06 | FR-05, FR-06 | Unit/integration | Successful transition creates one ordered audit event; invalid transition changes neither state nor audit. | VERIFIED — worker.test.ts |
 | T-07 | FR-07, FR-08 | Unit/integration | Provider selection is correct and mailbox outcomes persist/display. | Planned |
 | T-08 | FR-07, ADR-007 | Unit | Controlled provider outcomes prove success/failure without random flakiness. | VERIFIED — worker.test.ts (fake provider) |

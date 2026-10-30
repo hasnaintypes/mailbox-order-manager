@@ -32,7 +32,7 @@ flowchart LR
   SELECTOR --> MICROSOFT[Microsoft mock]
 ```
 
-## Intended module map
+## Module map
 
 ```text
 src/app/                 # pages and API adapters
@@ -125,7 +125,7 @@ sequenceDiagram
   end
 ```
 
-## Database proposal
+## Database schema
 
 All IDs are UUIDs; timestamps are UTC `timestamptz`.
 
@@ -254,7 +254,7 @@ Failures are `{ "error": { "code": "MACHINE_CODE", "message": "safe message", "d
 
 `401` is unauthenticated, `403` unauthorized, `404` missing resource, `409` state/idempotency conflict, `422` invalid input, and `500` unexpected logged failure.
 
-## Frontend proposal
+## Frontend
 
 | Area | Screens | Components/behavior |
 | --- | --- | --- |
