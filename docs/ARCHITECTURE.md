@@ -2,7 +2,7 @@
 
 ## Status and boundaries
 
-The modular-monolith, PostgreSQL, Drizzle, service/repository, state-machine, and provider-Strategy foundation is approved. The paths below remain intended implementation locations, not claims of implemented code.
+The modular-monolith, PostgreSQL, Drizzle, service/repository, state-machine, and provider-Strategy foundation is approved. The paths below describe the implemented code; `src/providers`, `src/worker`, `src/services` and `src/repositories` all exist.
 
 | Boundary | Responsibility | Must not own |
 | --- | --- | --- |

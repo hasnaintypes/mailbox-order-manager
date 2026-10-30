@@ -17,43 +17,43 @@ The brief names the file `Task.md` (capital T), although the phase instruction r
 
 | ID | Class | Description | Priority | Source | Acceptance criteria | Dependencies | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FR-01 | REQUIRED | Provide login with seeded users in `customer` and `admin` roles. | High | What to build: login | Seeded accounts can authenticate; both roles are applied to access. | TD-02 | Not Started |
-| FR-02 | REQUIRED | Customers see only their orders; admins see all. | High | What to build: roles | Customer cannot access another customer's order data; admin can access all orders. | FR-01, TD-02 | Not Started |
-| FR-03 | REQUIRED | Customer creates an order with domain, provider (`google`/`microsoft`), and 1–50 mailboxes. | Critical | What to build: customer order | Valid input creates an order; unsupported provider or count outside 1–50 is rejected. | FR-01, FR-13, TD-01 | Not Started |
-| FR-04 | REQUIRED | Creation is idempotent. | Critical | What to build: customer order | Repetition does not create a duplicate order. Exact semantics need ADR-003. | FR-03, NFR-02 | Not Started |
-| FR-05 | REQUIRED | Enforce `PENDING → PROVISIONING → ACTIVE` or `FAILED`; admin may retry `FAILED → PENDING`; reject invalid transitions. | Critical | What to build: status flow | Only listed transitions succeed; invalid attempts do not mutate state. | FR-10, NFR-02 | Not Started |
-| FR-06 | REQUIRED | Save every status transition to an audit log. | High | What to build: status flow | Every successful transition has a visible audit record. | FR-05 | Not Started |
-| FR-07 | REQUIRED | Use mocked Google/Microsoft provider abstractions, with a few-seconds call and about 20% random failure. | High | What to build: worker | Correct provider is selected and both mocks provide specified behavior. | FR-03, FR-08 | Not Started |
-| FR-08 | REQUIRED | Background worker provisions mailboxes; detail exposes per-mailbox status. | High | What to build: worker; screens | Worker produces mailbox outcomes visible on order detail. | FR-07, FR-11 | Not Started |
-| FR-09 | REQUIRED | Two worker runs must never process one order twice. | Critical | What to build: worker | Concurrent/repeated execution cannot claim/provision one order more than once. | FR-05, NFR-02 | Not Started |
-| FR-10 | REQUIRED | Admin can retry a failed order. | High | What to build: status flow; screens | Admin triggers only `FAILED → PENDING`; unauthorized/ineligible retries are rejected. | FR-02, FR-05, FR-12 | Not Started |
-| FR-11 | REQUIRED | Customer list, create form, and detail show order, mailbox statuses, and audit log. | Medium | What to build: screens | Each stated view is available to its owning customer. | FR-01, FR-02, FR-03, FR-06, FR-08 | Not Started |
-| FR-12 | REQUIRED | Admin list has status/provider filters, pagination, and retry. | High | What to build: screens | Admin can filter, page, and invoke eligible retry. | FR-02, FR-10 | Not Started |
-| FR-13 | REQUIRED | Validate input and return consistent errors. | High | What to build: screens | Untrusted input is validated; invalid/rejected operations share an error shape. | FR-03, FR-05, FR-10 | Not Started |
+| FR-01 | REQUIRED | Provide login with seeded users in `customer` and `admin` roles. | High | What to build: login | Seeded accounts can authenticate; both roles are applied to access. | TD-02 | Implemented |
+| FR-02 | REQUIRED | Customers see only their orders; admins see all. | High | What to build: roles | Customer cannot access another customer's order data; admin can access all orders. | FR-01, TD-02 | Implemented |
+| FR-03 | REQUIRED | Customer creates an order with domain, provider (`google`/`microsoft`), and 1–50 mailboxes. | Critical | What to build: customer order | Valid input creates an order; unsupported provider or count outside 1–50 is rejected. | FR-01, FR-13, TD-01 | Implemented |
+| FR-04 | REQUIRED | Creation is idempotent. | Critical | What to build: customer order | Repetition does not create a duplicate order. Exact semantics need ADR-003. | FR-03, NFR-02 | Implemented |
+| FR-05 | REQUIRED | Enforce `PENDING → PROVISIONING → ACTIVE` or `FAILED`; admin may retry `FAILED → PENDING`; reject invalid transitions. | Critical | What to build: status flow | Only listed transitions succeed; invalid attempts do not mutate state. | FR-10, NFR-02 | Implemented |
+| FR-06 | REQUIRED | Save every status transition to an audit log. | High | What to build: status flow | Every successful transition has a visible audit record. | FR-05 | Implemented |
+| FR-07 | REQUIRED | Use mocked Google/Microsoft provider abstractions, with a few-seconds call and about 20% random failure. | High | What to build: worker | Correct provider is selected and both mocks provide specified behavior. | FR-03, FR-08 | Implemented |
+| FR-08 | REQUIRED | Background worker provisions mailboxes; detail exposes per-mailbox status. | High | What to build: worker; screens | Worker produces mailbox outcomes visible on order detail. | FR-07, FR-11 | Implemented |
+| FR-09 | REQUIRED | Two worker runs must never process one order twice. | Critical | What to build: worker | Concurrent/repeated execution cannot claim/provision one order more than once. | FR-05, NFR-02 | Implemented |
+| FR-10 | REQUIRED | Admin can retry a failed order. | High | What to build: status flow; screens | Admin triggers only `FAILED → PENDING`; unauthorized/ineligible retries are rejected. | FR-02, FR-05, FR-12 | Implemented |
+| FR-11 | REQUIRED | Customer list, create form, and detail show order, mailbox statuses, and audit log. | Medium | What to build: screens | Each stated view is available to its owning customer. | FR-01, FR-02, FR-03, FR-06, FR-08 | Implemented |
+| FR-12 | REQUIRED | Admin list has status/provider filters, pagination, and retry. | High | What to build: screens | Admin can filter, page, and invoke eligible retry. | FR-02, FR-10 | Implemented |
+| FR-13 | REQUIRED | Validate input and return consistent errors. | High | What to build: screens | Untrusted input is validated; invalid/rejected operations share an error shape. | FR-03, FR-05, FR-10 | Implemented |
 
 ## Non-functional requirements
 
 | ID | Class | Description | Priority | Source | Acceptance criteria | Dependencies | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| NFR-01 | REQUIRED | Strict TypeScript and layered code; no business logic in route handlers/components. | High | Technical rules | Strict TypeScript and domain rules outside routes/components. | TD-01 | Not Started |
-| NFR-02 | REQUIRED | Ensure durable correctness for idempotency and concurrent workers. | Critical | What to build: idempotency/worker | Duplicate creation and work are prevented by durable behavior. | TD-01 | Not Started |
-| NFR-03 | REQUIRED | Include state-machine unit tests and one PostgreSQL order-creation integration test. | High | Technical rules | Required tests exist and run at stated boundaries. | TD-01, TD-02 | Not Started |
-| NFR-04 | REQUIRED | Document patterns, location, rationale, and rejected alternative. | Medium | Technical rules | Architecture doc records each pattern actually used. | NFR-01 | Not Started |
+| NFR-01 | REQUIRED | Strict TypeScript and layered code; no business logic in route handlers/components. | High | Technical rules | Strict TypeScript and domain rules outside routes/components. | TD-01 | Implemented |
+| NFR-02 | REQUIRED | Ensure durable correctness for idempotency and concurrent workers. | Critical | What to build: idempotency/worker | Duplicate creation and work are prevented by durable behavior. | TD-01 | Implemented |
+| NFR-03 | REQUIRED | Include state-machine unit tests and one PostgreSQL order-creation integration test. | High | Technical rules | Required tests exist and run at stated boundaries. | TD-01, TD-02 | Implemented |
+| NFR-04 | REQUIRED | Document patterns, location, rationale, and rejected alternative. | Medium | Technical rules | Architecture doc records each pattern actually used. | NFR-01 | Implemented |
 
 ## Technical and delivery requirements
 
 | ID | Class | Description | Priority | Source | Acceptance criteria | Dependencies | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| TD-01 | REQUIRED | Next.js App Router, strict TypeScript, PostgreSQL, Prisma or Drizzle. | Critical | Stack; technical rules | All mandated technologies are used; ORM is selected after approval. | — | Not Started |
-| TD-02 | REQUIRED | Migrations and seed data. | High | Technical rules | Clean database can migrate and receive seeds. | TD-01 | Not Started |
-| TD-03 | REQUIRED | `docker-compose.yml` for Postgres and `.env.example`. | High | Technical rules | Both exist and support local setup without secrets. | TD-01 | Not Started |
-| TD-04 | REQUIRED | Keep `docs/ARCHITECTURE.md` current with actual patterns and rejected alternatives. | Medium | Technical rules | Documentation matches implementation. | NFR-04 | Not Started |
+| TD-01 | REQUIRED | Next.js App Router, strict TypeScript, PostgreSQL, Prisma or Drizzle. | Critical | Stack; technical rules | All mandated technologies are used; ORM is selected after approval. | — | Implemented |
+| TD-02 | REQUIRED | Migrations and seed data. | High | Technical rules | Clean database can migrate and receive seeds. | TD-01 | Implemented |
+| TD-03 | REQUIRED | `docker-compose.yml` for Postgres and `.env.example`. | High | Technical rules | Both exist and support local setup without secrets. | TD-01 | Implemented |
+| TD-04 | REQUIRED | Keep `docs/ARCHITECTURE.md` current with actual patterns and rejected alternatives. | Medium | Technical rules | Documentation matches implementation. | NFR-04 | Implemented |
 | TD-05 | REQUIRED (source fact) | Brief requests Claude Code-only evidence: `CLAUDE.md`, a Claude-focused worklog, reviewed output, and only Claude Code. | High | Claude Code evidence; Rules | Project work uses Claude Code only; resolved. | External evaluator direction | Done |
-| TD-06 | REQUIRED | Small, meaningful commits; no giant commit. | Medium | Claude Code evidence; red flags | Git history shows scoped commits when Git is available. | Git availability | Not Started |
-| TD-07 | REQUIRED | GitHub repo and clean-clone README under 10 minutes: setup, migrations, seed, app/worker, logins, tests, limitations. | High | What to submit | README contains each item and clean setup meets time target. | TD-01–TD-03, FR-01 | Not Started |
-| TD-08 | REQUIRED | Top-of-README 2–3 minute demo: creation, success/failure, admin audit/retry, tests. | Medium | What to submit | Real link and all named workflows demonstrated. | FR-03, FR-06, FR-10, TD-07 | Not Started |
-| TD-09 | REQUIRED | Respect 3–4 hour window and hard four-hour cap; list unfinished work at cap. | Critical | Stack/time; What to submit | Actual time is recorded and work stops at cap. | All implementation work | Not Started |
-| TD-10 | REQUIRED | Priority: creation/state machine; provider/worker; admin retry/audit; customer views; tests. | High | What to submit | Plan follows stated priority under time pressure. | TD-09 | Not Started |
+| TD-06 | REQUIRED | Small, meaningful commits; no giant commit. | Medium | Claude Code evidence; red flags | Git history shows scoped commits when Git is available. | Git availability | Implemented |
+| TD-07 | REQUIRED | GitHub repo and clean-clone README under 10 minutes: setup, migrations, seed, app/worker, logins, tests, limitations. | High | What to submit | README contains each item and clean setup meets time target. | TD-01–TD-03, FR-01 | README done; clean-clone typecheck verified; push pending |
+| TD-08 | REQUIRED | Top-of-README 2–3 minute demo: creation, success/failure, admin audit/retry, tests. | Medium | What to submit | Real link and all named workflows demonstrated. | FR-03, FR-06, FR-10, TD-07 | Pending — demo video not recorded |
+| TD-09 | REQUIRED | Respect 3–4 hour window and hard four-hour cap; list unfinished work at cap. | Critical | Stack/time; What to submit | Actual time is recorded and work stops at cap. | All implementation work | In progress — see worklog |
+| TD-10 | REQUIRED | Priority: creation/state machine; provider/worker; admin retry/audit; customer views; tests. | High | What to submit | Plan follows stated priority under time pressure. | TD-09 | Implemented |
 
 ## Requirement relationships
 

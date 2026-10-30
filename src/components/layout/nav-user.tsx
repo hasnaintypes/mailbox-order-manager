@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { nameFromEmail } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 type NavUserProps = {
@@ -23,12 +24,6 @@ type NavUserProps = {
   side?: "top" | "right" | "bottom" | "left";
   className?: string;
 };
-
-const nameFromEmail = (email: string) =>
-  (email.split("@")[0] ?? email)
-    .split(/[._-]/)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
 
 function UserSummary({ email }: Pick<NavUserProps, "email">) {
   const name = nameFromEmail(email);

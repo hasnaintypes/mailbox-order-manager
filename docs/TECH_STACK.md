@@ -2,7 +2,7 @@
 
 ## Status
 
-Every choice is **Proposed**, not accepted. Versions will be pinned only in approved implementation work.
+All choices are **Accepted** (ADR-008–ADR-013, ADR-016) and implemented. Versions are pinned in `package.json`.
 
 | Area | Recommendation | Alternatives / rationale | Tradeoffs and assessment impact |
 | --- | --- | --- | --- |
@@ -22,4 +22,4 @@ Every choice is **Proposed**, not accepted. Versions will be pinned only in appr
 - No Redis, BullMQ, real provider SDK, microservice, or managed auth is proposed. shadcn/ui is the approved local-source component layer.
 - PostgreSQL transactions are supported by Drizzle; route handlers are public endpoints and need server-side authorization. Sources: [Drizzle transactions](https://orm.drizzle.team/docs/transactions), [Next.js route handlers](https://nextjs.org/docs/app/getting-started/route-handlers), [Auth.js Credentials](https://authjs.dev/getting-started/authentication/credentials).
 
-These recommendations require ADR-008 through ADR-013 approval before dependency installation or scaffolding.
+Dev/test Postgres is published on host port 5433 (ADR-017).

@@ -2,6 +2,7 @@ import { db } from "@/db/client";
 import { Errors } from "@/lib/errors";
 import type { AdminOrderFilters } from "@/lib/validation";
 import {
+  countOrdersByStatus,
   findOrderById,
   listMailboxes,
   listOrderAuditEvents,
@@ -42,4 +43,9 @@ export async function getAdminOrder(orderId: string) {
     mailboxes: mailboxes.map(presentMailbox),
     audit: audit.map(presentAuditEvent),
   };
+}
+
+/** Statuses of every order, expanded so the dashboard can reuse the same stat cards. */
+export function getOrderStatusCounts() {
+  return countOrdersByStatus();
 }

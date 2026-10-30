@@ -87,3 +87,12 @@ export async function listOrdersForAdmin(filters: {
 
   return { items, total: counted?.total ?? 0 };
 }
+
+export async function countOrdersByStatus() {
+  const rows = await db
+    .select({ status: orders.status, total: count() })
+    .from(orders)
+    .groupBy(orders.status);
+
+  return rows.flatMap((row) => Array<OrderStatus>(row.total).fill(row.status));
+}
