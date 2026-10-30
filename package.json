@@ -14,10 +14,10 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
-    "test:integration": "dotenv -e .env.test -- vitest run tests/integration",
+    "test:integration": "dotenv run -f .env.test -- vitest run tests/integration",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:migrate:test": "dotenv -e .env.test -- drizzle-kit migrate",
+    "db:migrate:test": "dotenv run -f .env.test -- drizzle-kit migrate",
     "db:seed": "tsx src/db/seed.ts",
     "worker": "tsx src/worker/index.ts",
     "worker:once": "tsx src/worker/index.ts --once"
