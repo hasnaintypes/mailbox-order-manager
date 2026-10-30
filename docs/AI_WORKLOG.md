@@ -43,6 +43,16 @@ Requirements analysis of `Task.md` first, then architecture with explicit ADRs (
 3. `isUniqueConstraint` did not see through Drizzle's wrapped `cause`, so concurrent duplicate creates threw a raw unique-violation error. The concurrency integration test exposed it; the fix walks the cause chain.
 4. Plain `pnpm test` also ran integration tests without `.env.test` and failed on missing env vars; `test` now runs unit then integration with the correct env.
 
+## Changed by hand and manual steering
+
+No source-file edits made by hand are recorded. What the developer did directly, outside Claude Code's edits:
+
+- Verified that the Docker Postgres database was running and reachable.
+- Started the dev server and the background worker, and tested the app manually, including a failed order.
+- Recorded the Loom demo video linked at the top of the README.
+- Steered the design: asked for the dark theme, the tweakcn Supabase theme with the Outfit font, the shadcn `login-02` form, a dialog-based new-order flow and the avatar user menu.
+- Made the project decisions: public GitHub repository, commits without co-author trailers, Claude Code as the only AI tool.
+
 ## Time per phase (approximate, from recorded timestamps)
 
 | Phase | Time |
