@@ -43,10 +43,6 @@ Requirements analysis of `Task.md` first, then architecture with explicit ADRs (
 3. `isUniqueConstraint` did not see through Drizzle's wrapped `cause`, so concurrent duplicate creates threw a raw unique-violation error. The concurrency integration test exposed it; the fix walks the cause chain.
 4. Plain `pnpm test` also ran integration tests without `.env.test` and failed on missing env vars; `test` now runs unit then integration with the correct env.
 
-## Changed by hand
-
-Nothing is recorded as hand-edited yet; the user steered scope, ran the Postgres check and approved decisions. Add real hand edits here if any are made before submission.
-
 ## Time per phase (approximate, from recorded timestamps)
 
 | Phase | Time |
