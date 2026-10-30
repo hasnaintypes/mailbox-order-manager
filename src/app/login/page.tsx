@@ -50,28 +50,28 @@ export default async function LoginPage({
         </div>
       </div>
 
-      <aside className="relative hidden flex-col justify-between overflow-hidden bg-primary p-12 text-primary-foreground lg:flex">
+      <aside className="relative hidden flex-col items-end justify-between overflow-hidden bg-primary p-12 text-right text-primary-foreground lg:flex">
         <div
           aria-hidden
           className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full bg-primary-foreground/10 blur-3xl"
         />
-        <div className="relative flex items-center gap-2 text-lg font-semibold">
+        <div className="relative flex flex-row-reverse items-center gap-2 text-lg font-semibold">
           <span className="flex size-8 items-center justify-center rounded-lg bg-primary-foreground/15">
             <InboxIcon className="size-4" />
           </span>
           Mailbox Orders
         </div>
-        <div className="relative space-y-6">
+        <div className="relative space-y-6 text-right">
           <h2 className="text-4xl leading-tight font-semibold tracking-tight">
             Pre-warmed mailboxes,
             <br />
             ordered and tracked in one place.
           </h2>
           <ul className="space-y-3 text-primary-foreground/85">
-            <li className="flex items-center gap-3">
+            <li className="flex flex-row-reverse items-center gap-3">
               <ZapIcon className="size-4" /> Background provisioning for Google and Microsoft
             </li>
-            <li className="flex items-center gap-3">
+            <li className="flex flex-row-reverse items-center gap-3">
               <ShieldCheckIcon className="size-4" /> Full audit trail for every status change
             </li>
           </ul>

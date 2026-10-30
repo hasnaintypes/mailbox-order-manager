@@ -80,7 +80,7 @@ Patterns to keep (and name in `docs/ARCHITECTURE.md`): state machine, service + 
 - **Commits**: small, meaningful, one per verified slice; no co-author trailers. Never one giant commit. Don't push or publish without explicit approval.
 - **`docs/AI_WORKLOG.md`**: append factual rows only — phase, key prompts (3–5), real times, places Claude was wrong and how it was fixed, hand edits. Don't invent errors or times. Claude Code is the only AI tool (TD-05).
 - Update docs per the sync table in `docs/AI_WORKFLOW.md`; record meaningful tradeoffs in `docs/DECISIONS.md`; mark plan tasks VERIFIED only with command output recorded.
-- Track elapsed time against the 4h cap (~2h45m used so far; see worklog). At the cap, stop and list unfinished work in priority order: order creation/state machine → provider abstraction/worker → admin list/retry/audit → customer views → tests.
+- Track elapsed time against the 4h cap (~2h55m used so far; see worklog). At the cap, stop and list unfinished work in priority order: order creation/state machine → provider abstraction/worker → admin list/retry/audit → customer views → tests.
 - Deliverables still owed: `README.md` (clean-clone run in <10 min, logins, tests, limitations, demo link at top), `docs/ARCHITECTURE.md` pattern section (location, why, rejected alternative), demo video.
 
 ## Current status (update as work lands)
