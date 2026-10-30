@@ -1,96 +1,131 @@
+import { ArrowRightIcon, CircleIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { StatusBadge } from "@/components/orders/status-badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { capitalize, formatDateTime } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { getCustomerOrder } from "@/services/customer-orders";
 
 type Detail = Awaited<ReturnType<typeof getCustomerOrder>>;
 
-const formatDate = (value: Date) => value.toISOString().replace("T", " ").slice(0, 19) + " UTC";
+function Fact({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</dt>
+      <dd className="text-sm font-medium">{children}</dd>
+    </div>
+  );
+}
 
-export function OrderDetailView({ detail, actions }: { detail: Detail; actions?: ReactNode }) {
+export function OrderDetailView({ detail }: { detail: Detail }) {
   const { order, mailboxes, audit } = detail;
+  const active = mailboxes.filter((m) => m.status === "ACTIVE").length;
+  const failed = mailboxes.filter((m) => m.status === "FAILED").length;
+  const percent = mailboxes.length ? Math.round((active / mailboxes.length) * 100) : 0;
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <CardTitle>{order.domain}</CardTitle>
-          <div className="flex items-center gap-3">
-            <StatusBadge status={order.status} />
-            {actions}
-          </div>
-        </CardHeader>
-        <CardContent className="grid gap-2 text-sm sm:grid-cols-3">
-          <p>Provider: <span className="font-medium capitalize">{order.provider}</span></p>
-          <p>Mailboxes: <span className="font-medium">{order.mailboxCount}</span></p>
-          <p>Created: <span className="font-medium">{formatDate(order.createdAt)}</span></p>
-        </CardContent>
-      </Card>
+    <div className="grid gap-6 lg:grid-cols-3">
+      <div className="space-y-6 lg:col-span-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Provisioning progress</CardTitle>
+            <CardDescription>
+              {active} of {mailboxes.length} mailboxes active{failed ? ` · ${failed} failed` : ""}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div
+              role="progressbar"
+              aria-valuenow={percent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              className="h-2 overflow-hidden rounded-full bg-muted"
+            >
+              <div
+                className={cn("h-full rounded-full bg-success transition-all", failed > 0 && "bg-destructive")}
+                style={{ width: `${percent}%` }}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader><CardTitle>Mailboxes</CardTitle></CardHeader>
-        <CardContent>
+        <Card className="gap-0 overflow-hidden pb-0">
+          <CardHeader className="pb-4"><CardTitle>Mailboxes</CardTitle></CardHeader>
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>#</TableHead>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="pl-4">#</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Reference / failure</TableHead>
+                <TableHead className="pr-4">Provider reference / failure</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {mailboxes.map((mailbox) => (
                 <TableRow key={mailbox.id}>
-                  <TableCell>{mailbox.ordinal}</TableCell>
+                  <TableCell className="pl-4 tabular-nums">{mailbox.ordinal}</TableCell>
                   <TableCell><StatusBadge status={mailbox.status} /></TableCell>
-                  <TableCell className="font-mono text-xs">
+                  <TableCell className="pr-4 font-mono text-xs text-muted-foreground">
                     {mailbox.providerReference ?? mailbox.failureCode ?? "—"}
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </Card>
+      </div>
 
-      <Card>
-        <CardHeader><CardTitle>Audit log</CardTitle></CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>#</TableHead>
-                <TableHead>Event</TableHead>
-                <TableHead>Transition</TableHead>
-                <TableHead>Actor</TableHead>
-                <TableHead>When</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <dl className="grid grid-cols-2 gap-4">
+              <Fact label="Status"><StatusBadge status={order.status} /></Fact>
+              <Fact label="Provider">{capitalize(order.provider)}</Fact>
+              <Fact label="Mailboxes">{order.mailboxCount}</Fact>
+              <Fact label="Created">{formatDateTime(order.createdAt)}</Fact>
+            </dl>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Audit log</CardTitle>
+            <CardDescription>Every status change, in order.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ol className="relative space-y-5 border-l pl-5">
               {audit.map((event) => (
-                <TableRow key={event.sequence}>
-                  <TableCell>{event.sequence}</TableCell>
-                  <TableCell>{event.eventType}</TableCell>
-                  <TableCell>
-                    {event.toStatus ? `${event.fromStatus ?? "—"} → ${event.toStatus}` : "—"}
-                  </TableCell>
-                  <TableCell className="capitalize">{event.actorType}</TableCell>
-                  <TableCell className="text-xs">{formatDate(event.createdAt)}</TableCell>
-                </TableRow>
+                <li key={event.sequence} className="relative">
+                  <CircleIcon className="absolute -left-[1.65rem] top-1 size-3 fill-primary text-primary" />
+                  <div className="flex flex-wrap items-center gap-1.5 text-sm font-medium">
+                    {event.toStatus ? (
+                      <>
+                        {event.fromStatus ? (
+                          <>
+                            <StatusBadge status={event.fromStatus} />
+                            <ArrowRightIcon className="size-3.5 text-muted-foreground" />
+                          </>
+                        ) : null}
+                        <StatusBadge status={event.toStatus} />
+                      </>
+                    ) : (
+                      <Badge variant="outline">Lease reclaimed</Badge>
+                    )}
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    #{event.sequence} · {capitalize(event.actorType)} · {formatDateTime(event.createdAt)}
+                  </p>
+                </li>
               ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            </ol>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

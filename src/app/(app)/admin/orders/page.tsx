@@ -1,34 +1,37 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { requireAdmin } from "@/auth/actor";
+import { AutoRefresh } from "@/components/layout/auto-refresh";
+import { PageHeader } from "@/components/layout/page-header";
+import { AdminFilters } from "@/components/orders/admin-filters";
+import { EmptyState } from "@/components/orders/empty-state";
+import { OrderTable } from "@/components/orders/order-table";
 import { RetryButton } from "@/components/orders/retry-button";
-import { StatusBadge } from "@/components/orders/status-badge";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ORDER_STATUSES, PROVIDER_NAMES } from "@/domain/orders/status";
+import { Card } from "@/components/ui/card";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { adminOrderFiltersSchema } from "@/lib/validation";
 import { listAdminOrders } from "@/services/admin-orders";
-
-type SearchParams = Record<string, string | undefined>;
-
-const selectClass = "h-9 rounded-md border border-input bg-transparent px-3 text-sm";
 
 export default async function AdminOrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<SearchParams>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }) {
   await requireAdmin().catch(() => redirect("/"));
 
-  const raw = await searchParams;
-  // Blank filter values ("All") are dropped; invalid ones fall back to defaults.
-  const cleaned = Object.fromEntries(Object.entries(raw).filter(([, value]) => value));
+  const cleaned = Object.fromEntries(Object.entries(await searchParams).filter(([, value]) => value));
   const parsed = adminOrderFiltersSchema.safeParse({ pageSize: 10, ...cleaned });
   const filters = parsed.success ? parsed.data : { page: 1, pageSize: 10 };
   const result = await listAdminOrders(filters);
+  const inFlight = result.items.some((o) => o.status === "PENDING" || o.status === "PROVISIONING");
 
-  const link = (page: number) => {
+  const href = (page: number) => {
     const query = new URLSearchParams();
     if (filters.status) query.set("status", filters.status);
     if (filters.provider) query.set("provider", filters.provider);
@@ -37,57 +40,36 @@ export default async function AdminOrdersPage({
   };
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">All orders</h1>
-
-      <form className="flex flex-wrap items-center gap-3" method="get">
-        <select name="status" defaultValue={filters.status ?? ""} className={selectClass} aria-label="Status">
-          <option value="">All statuses</option>
-          {ORDER_STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
-        </select>
-        <select name="provider" defaultValue={filters.provider ?? ""} className={selectClass} aria-label="Provider">
-          <option value="">All providers</option>
-          {PROVIDER_NAMES.map((provider) => <option key={provider} value={provider}>{provider}</option>)}
-        </select>
-        <Button type="submit" variant="outline" size="sm">Filter</Button>
-      </form>
-
-      {result.items.length === 0 ? (
-        <p className="text-muted-foreground">No orders match.</p>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Domain</TableHead>
-              <TableHead>Provider</TableHead>
-              <TableHead>Mailboxes</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {result.items.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell><Link className="underline" href={`/admin/orders/${order.id}`}>{order.domain}</Link></TableCell>
-                <TableCell className="capitalize">{order.provider}</TableCell>
-                <TableCell>{order.mailboxCount}</TableCell>
-                <TableCell><StatusBadge status={order.status} /></TableCell>
-                <TableCell className="text-xs">{order.createdAt.toISOString().slice(0, 16).replace("T", " ")}</TableCell>
-                <TableCell>{order.status === "FAILED" ? <RetryButton orderId={order.id} /> : null}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
-
-      <div className="flex items-center justify-between text-sm">
-        <span>Page {result.page} of {result.totalPages} · {result.total} orders</span>
-        <div className="flex gap-2">
-          {result.page > 1 ? <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={link(result.page - 1)}>Previous</Link> : null}
-          {result.page < result.totalPages ? <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={link(result.page + 1)}>Next</Link> : null}
-        </div>
+    <>
+      <AutoRefresh active={inFlight} />
+      <PageHeader title="All orders" description="Every customer order. Retry failed orders to send them back to the queue." />
+      <AdminFilters status={filters.status} provider={filters.provider} />
+      <Card className="gap-0 overflow-hidden p-0">
+        {result.items.length === 0 ? (
+          <EmptyState title="No orders match" description="Try clearing the filters." />
+        ) : (
+          <OrderTable
+            orders={result.items}
+            basePath="/admin/orders"
+            renderAction={(order) => (order.status === "FAILED" ? <RetryButton orderId={order.id} /> : null)}
+          />
+        )}
+      </Card>
+      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+        <span>
+          Page {result.page} of {result.totalPages} · {result.total} {result.total === 1 ? "order" : "orders"}
+        </span>
+        <Pagination className="mx-0 w-auto">
+          <PaginationContent>
+            {result.page > 1 ? (
+              <PaginationItem><PaginationPrevious href={href(result.page - 1)} /></PaginationItem>
+            ) : null}
+            {result.page < result.totalPages ? (
+              <PaginationItem><PaginationNext href={href(result.page + 1)} /></PaginationItem>
+            ) : null}
+          </PaginationContent>
+        </Pagination>
       </div>
-    </div>
+    </>
   );
 }

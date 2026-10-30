@@ -1,8 +1,13 @@
+import { ArrowLeftIcon } from "lucide-react";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { requireAdmin } from "@/auth/actor";
+import { AutoRefresh } from "@/components/layout/auto-refresh";
+import { PageHeader } from "@/components/layout/page-header";
 import { OrderDetailView } from "@/components/orders/order-detail-view";
 import { RetryButton } from "@/components/orders/retry-button";
+import { buttonVariants } from "@/components/ui/button";
 import { AppError } from "@/lib/errors";
 import { orderIdSchema } from "@/lib/validation";
 import { getAdminOrder } from "@/services/admin-orders";
@@ -25,14 +30,24 @@ export default async function AdminOrderPage({
     }
     throw error;
   });
+  const { status, id } = detail.order;
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Order detail</h1>
-      <OrderDetailView
-        detail={detail}
-        actions={detail.order.status === "FAILED" ? <RetryButton orderId={detail.order.id} /> : undefined}
+    <>
+      <AutoRefresh active={status === "PENDING" || status === "PROVISIONING"} />
+      <PageHeader
+        title={detail.order.domain}
+        description="Order details and audit trail"
+        actions={
+          <>
+            {status === "FAILED" ? <RetryButton orderId={id} size="default" /> : null}
+            <Link href="/admin/orders" className={buttonVariants({ variant: "outline" })}>
+              <ArrowLeftIcon /> Back
+            </Link>
+          </>
+        }
       />
-    </div>
+      <OrderDetailView detail={detail} />
+    </>
   );
 }

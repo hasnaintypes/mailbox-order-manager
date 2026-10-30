@@ -1,48 +1,40 @@
+import { PlusIcon } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { requireCustomer } from "@/auth/actor";
-import { StatusBadge } from "@/components/orders/status-badge";
+import { AutoRefresh } from "@/components/layout/auto-refresh";
+import { PageHeader } from "@/components/layout/page-header";
+import { EmptyState } from "@/components/orders/empty-state";
+import { OrderTable } from "@/components/orders/order-table";
+import { StatCards } from "@/components/orders/stat-cards";
 import { buttonVariants } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card } from "@/components/ui/card";
 import { listCustomerOrders } from "@/services/customer-orders";
 
 export default async function CustomerOrdersPage() {
   const actor = await requireCustomer().catch(() => redirect("/"));
   const { items } = await listCustomerOrders(actor.id, 1, 100);
+  const inFlight = items.some((o) => o.status === "PENDING" || o.status === "PROVISIONING");
+
+  const newOrder = (
+    <Link href="/orders/new" className={buttonVariants()}>
+      <PlusIcon /> New order
+    </Link>
+  );
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">My orders</h1>
-        <Link href="/orders/new" className={buttonVariants()}>New order</Link>
-      </div>
-      {items.length === 0 ? (
-        <p className="text-muted-foreground">No orders yet.</p>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Domain</TableHead>
-              <TableHead>Provider</TableHead>
-              <TableHead>Mailboxes</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {items.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell><Link className="underline" href={`/orders/${order.id}`}>{order.domain}</Link></TableCell>
-                <TableCell className="capitalize">{order.provider}</TableCell>
-                <TableCell>{order.mailboxCount}</TableCell>
-                <TableCell><StatusBadge status={order.status} /></TableCell>
-                <TableCell className="text-xs">{order.createdAt.toISOString().slice(0, 16).replace("T", " ")}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
-    </div>
+    <>
+      <AutoRefresh active={inFlight} />
+      <PageHeader title="My orders" description="Track your mailbox orders and their provisioning progress." actions={newOrder} />
+      <StatCards statuses={items.map((o) => o.status)} />
+      <Card className="gap-0 overflow-hidden p-0">
+        {items.length === 0 ? (
+          <EmptyState title="No orders yet" description="Create your first order to get started." action={newOrder} />
+        ) : (
+          <OrderTable orders={items} basePath="/orders" />
+        )}
+      </Card>
+    </>
   );
 }

@@ -1,7 +1,12 @@
+import { ArrowLeftIcon } from "lucide-react";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { requireCustomer } from "@/auth/actor";
+import { AutoRefresh } from "@/components/layout/auto-refresh";
+import { PageHeader } from "@/components/layout/page-header";
 import { OrderDetailView } from "@/components/orders/order-detail-view";
+import { buttonVariants } from "@/components/ui/button";
 import { AppError } from "@/lib/errors";
 import { orderIdSchema } from "@/lib/validation";
 import { getCustomerOrder } from "@/services/customer-orders";
@@ -24,11 +29,21 @@ export default async function CustomerOrderPage({
     }
     throw error;
   });
+  const inFlight = detail.order.status === "PENDING" || detail.order.status === "PROVISIONING";
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Order detail</h1>
+    <>
+      <AutoRefresh active={inFlight} />
+      <PageHeader
+        title={detail.order.domain}
+        description="Order details"
+        actions={
+          <Link href="/orders" className={buttonVariants({ variant: "outline" })}>
+            <ArrowLeftIcon /> Back
+          </Link>
+        }
+      />
       <OrderDetailView detail={detail} />
-    </div>
+    </>
   );
 }
