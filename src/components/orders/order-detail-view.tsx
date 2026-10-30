@@ -101,7 +101,7 @@ export function OrderDetailView({ detail }: { detail: Detail }) {
             <ol className="relative space-y-5 border-l pl-5">
               {audit.map((event) => (
                 <li key={event.sequence} className="relative">
-                  <CircleIcon className="absolute -left-[1.65rem] top-1 size-3 fill-primary text-primary" />
+                  <CircleIcon className="absolute -left-[1.65rem] top-1 size-3 fill-ring text-ring" />
                   <div className="flex flex-wrap items-center gap-1.5 text-sm font-medium">
                     {event.toStatus ? (
                       <>

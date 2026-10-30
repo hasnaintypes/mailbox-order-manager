@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Outfit } from "next/font/google";
 import type { ReactNode } from "react";
 
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
-const jakarta = Plus_Jakarta_Sans({
+const outfit = Outfit({
   subsets: ["latin"],
-  variable: "--font-jakarta",
+  variable: "--font-outfit",
   display: "swap",
 });
 
@@ -22,7 +22,7 @@ type RootLayoutProps = Readonly<{
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={`${jakarta.variable} font-sans antialiased`}>
+    <html lang="en" className={`${outfit.variable} dark font-sans antialiased`}>
       <body>
         {children}
         <Toaster richColors position="top-right" />

@@ -33,7 +33,7 @@ export function OrderTable({
         {orders.map((order) => (
           <TableRow key={order.id}>
             <TableCell className="pl-4 font-medium">
-              <Link className="hover:text-primary hover:underline" href={`${basePath}/${order.id}`}>
+              <Link className="hover:underline" href={`${basePath}/${order.id}`}>
                 {order.domain}
               </Link>
             </TableCell>

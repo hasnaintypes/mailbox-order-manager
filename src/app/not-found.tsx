@@ -5,7 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 export default function NotFound() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 text-center">
-      <p className="text-sm font-medium text-primary">404</p>
+      <p className="text-sm font-medium text-ring">404</p>
       <h1 className="text-2xl font-semibold tracking-tight">Page not found</h1>
       <p className="text-sm text-muted-foreground">That order or page doesn&apos;t exist, or you don&apos;t have access to it.</p>
       <Link href="/" className={buttonVariants()}>Back to home</Link>
