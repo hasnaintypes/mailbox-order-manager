@@ -1,14 +1,12 @@
-import { PlusIcon } from "lucide-react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { requireCustomer } from "@/auth/actor";
 import { AutoRefresh } from "@/components/layout/auto-refresh";
 import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/orders/empty-state";
+import { NewOrderDialog } from "@/components/orders/new-order-dialog";
 import { OrderTable } from "@/components/orders/order-table";
 import { StatCards } from "@/components/orders/stat-cards";
-import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { listCustomerOrders } from "@/services/customer-orders";
 
@@ -17,11 +15,7 @@ export default async function CustomerOrdersPage() {
   const { items } = await listCustomerOrders(actor.id, 1, 100);
   const inFlight = items.some((o) => o.status === "PENDING" || o.status === "PROVISIONING");
 
-  const newOrder = (
-    <Link href="/orders/new" className={buttonVariants()}>
-      <PlusIcon /> New order
-    </Link>
-  );
+  const newOrder = <NewOrderDialog />;
 
   return (
     <>

@@ -31,7 +31,7 @@ Postgres is published on **5433** so it does not clash with a local Postgres on 
 
 ## Using it
 
-- **Customer:** *New order* → domain, provider, 1–50 mailboxes. Order list and detail show per-mailbox status and the audit log.
+- **Customer:** *New order* (button opens a dialog) → domain, provider, 1–50 mailboxes. Order list and detail show per-mailbox status and the audit log.
 - **Worker:** picks up `PENDING` orders, provisions through the mock Google/Microsoft provider (~2.5s per mailbox, ~20% failure; tune with `PROVIDER_DELAY_MS`, `PROVIDER_FAILURE_RATE`). `pnpm worker:once` drains the queue and exits.
 - **Admin:** *All orders* with status/provider filters, pagination, and a **Retry** button on `FAILED` orders (`FAILED → PENDING`; already-active mailboxes are not provisioned again).
 

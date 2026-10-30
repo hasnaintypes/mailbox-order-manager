@@ -1,16 +1,15 @@
-import { InboxIcon, LogOutIcon } from "lucide-react";
+import { InboxIcon } from "lucide-react";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
 import { AppNav, type NavItem } from "@/components/layout/app-nav";
+import { NavUser } from "@/components/layout/nav-user";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 const CUSTOMER_NAV: NavItem[] = [
   { href: "/orders", label: "My orders", icon: "orders" },
-  { href: "/orders/new", label: "New order", icon: "new" },
 ];
 const ADMIN_NAV: NavItem[] = [{ href: "/admin/orders", label: "All orders", icon: "admin" }];
 
@@ -34,10 +33,6 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   const { email, role } = session.user;
   const items = role === "admin" ? ADMIN_NAV : CUSTOMER_NAV;
-  const signOutAction = async () => {
-    "use server";
-    await signOut({ redirectTo: "/login" });
-  };
 
   return (
     <div className="flex min-h-svh">
@@ -51,15 +46,9 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           </p>
           <AppNav items={items} />
         </div>
-        <form action={signOutAction} className="space-y-3 border-t p-4">
-          <div className="min-w-0 space-y-1">
-            <p className="truncate text-sm font-medium">{email}</p>
-            <Badge variant="secondary" className="capitalize">{role}</Badge>
-          </div>
-          <Button variant="outline" size="sm" type="submit" className="w-full">
-            <LogOutIcon /> Sign out
-          </Button>
-        </form>
+        <div className="border-t p-3">
+          <NavUser email={email} role={role} />
+        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -72,11 +61,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           <p className="hidden text-sm text-muted-foreground lg:block">
             {role === "admin" ? "Admin console" : "Customer portal"}
           </p>
-          <form action={signOutAction} className="flex items-center gap-3 lg:hidden">
-            <Button variant="ghost" size="sm" type="submit">
-              <LogOutIcon /> Sign out
-            </Button>
-          </form>
+          <NavUser email={email} role={role} compact side="bottom" className="lg:hidden" />
           <div className="hidden items-center gap-3 lg:flex">
             <span className="text-sm text-muted-foreground">{email}</span>
             <Badge variant="secondary" className="capitalize">{role}</Badge>

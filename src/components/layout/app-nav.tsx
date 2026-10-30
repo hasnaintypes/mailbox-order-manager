@@ -1,6 +1,6 @@
 "use client";
 
-import { ListChecksIcon, PlusCircleIcon, ShieldCheckIcon, type LucideIcon } from "lucide-react";
+import { ListChecksIcon, ShieldCheckIcon, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -8,16 +8,12 @@ import { cn } from "@/lib/utils";
 
 const ICONS = {
   orders: ListChecksIcon,
-  new: PlusCircleIcon,
   admin: ShieldCheckIcon,
 } satisfies Record<string, LucideIcon>;
 
 export type NavItem = { href: string; label: string; icon: keyof typeof ICONS };
 
 function isActive(pathname: string, href: string) {
-  if (href === "/orders") {
-    return pathname === "/orders" || /^\/orders\/(?!new)/.test(pathname);
-  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
