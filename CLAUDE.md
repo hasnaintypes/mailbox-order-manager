@@ -86,5 +86,5 @@ Patterns to keep (and name in `docs/ARCHITECTURE.md`): state machine, service + 
 ## Current status (update as work lands)
 
 Implemented and verified: schema/migrations/seed, state machine (16 unit tests), idempotent create, provider Strategy + durable ledger, safe worker (lease + fencing), admin list/retry/audit, login, customer and admin screens (12 integration tests; HTTP smoke on a production build).
-Remaining: demo video + README link, final delivery audit (`delivery-audit` skill), browser click-through of the UI, worklog time totals.
+Demo video is linked at the top of the README. Remaining: final delivery audit (`delivery-audit` skill), browser click-through of the UI, worklog time totals.
 Notes: Postgres is published on host port 5433 (5432 is used by another local container). Do not use broad `pkill`; stop servers by port.

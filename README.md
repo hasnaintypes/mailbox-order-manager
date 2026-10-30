@@ -1,8 +1,8 @@
 # Mailbox Order Manager
 
-Internal tool for ordering pre-warmed Google and Microsoft mailboxes. Next.js (App Router, strict TypeScript) + PostgreSQL (Drizzle) with a separate background worker.
+> **Demo video (2–3 min):** [Watch on Loom](https://www.loom.com/share/d673175a00b84cf99b2f06261cc7e783)
 
-> Demo video: _to be added before submission_
+Internal tool for ordering pre-warmed Google and Microsoft mailboxes. Next.js (App Router, strict TypeScript) + PostgreSQL (Drizzle) with a separate background worker.
 
 ## Quick start (clean clone)
 
