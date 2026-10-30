@@ -36,12 +36,25 @@ function fingerprintRequest(customerId: string, input: CreateOrderInput): string
 }
 
 function isUniqueConstraint(error: unknown, constraint: string): boolean {
-  if (!error || typeof error !== "object") {
-    return false;
+  // Drizzle wraps driver errors, so walk the cause chain to the Postgres error.
+  for (let current = error; current && typeof current === "object"; ) {
+    const candidate = current as {
+      code?: string;
+      constraint_name?: string;
+      cause?: unknown;
+    };
+
+    if (
+      candidate.code === "23505" &&
+      candidate.constraint_name === constraint
+    ) {
+      return true;
+    }
+
+    current = candidate.cause;
   }
 
-  const candidate = error as { code?: string; constraint_name?: string };
-  return candidate.code === "23505" && candidate.constraint_name === constraint;
+  return false;
 }
 
 async function replayExistingOrder(
