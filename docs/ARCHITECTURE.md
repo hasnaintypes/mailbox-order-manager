@@ -264,15 +264,17 @@ Failures are `{ "error": { "code": "MACHINE_CODE", "message": "safe message", "d
 
 Pages may server-load session-scoped data. UI never decides authorization, idempotency, or transitions.
 
-## Proposed patterns
+## Patterns used
 
-| Pattern | Intended location | Why | Rejected alternative |
+| Pattern | Location | Why | Rejected alternative |
 | --- | --- | --- | --- |
-| Service layer | `src/services` | Testable business rules. | Logic in routes/components. |
-| Repository | `src/repositories` | Isolates locking/scoped queries. | Scattered ORM calls. |
-| State machine | `src/domain/orders` | Central valid transitions. | Ad hoc status checks. |
-| Strategy | `src/providers` | Provider extensibility. | Worker-wide switches. |
-| PostgreSQL work queue | `src/worker` + repository | Meets worker safety without new service. | Redis/BullMQ. |
+| Service layer | `src/services` | Business rules (create, retry, provisioning orchestration) are testable without HTTP or React. | Logic in route handlers/components. |
+| Repository | `src/repositories` | Isolates scoped queries, `FOR UPDATE SKIP LOCKED` claiming and audit appends. | Scattered ORM calls in services. |
+| State machine | `src/domain/orders/state-machine.ts` | One transition table; `assertTransition` guards every status change. | Ad hoc status checks. |
+| Strategy | `src/providers` (`MailboxProvider`, `MockMailboxProvider`, `resolveProvider`) | Adding a provider does not touch worker flow. | Provider `switch` inside the worker. |
+| PostgreSQL work queue + worker | `src/worker`, `src/repositories/provisioning-repository.ts` | Safe concurrent claiming with lease + token/generation fencing, no new infrastructure. | Redis/BullMQ. |
+| Idempotency key record | `idempotency_records`, `src/services/create-order.ts` | A DB unique constraint makes concurrent duplicate creates converge on one order. | Check-then-insert in application code. |
+| Durable operation ledger | `provider_provisioning_operations` | Same provisioning key always returns the same mock result, even after a restart. | In-memory mock state. |
 
 ## Architecture review findings
 

@@ -175,3 +175,24 @@ No decisions were accepted during initialization. The following are proposed onl
 - Recommended approach: Use shadcn/ui with Tailwind and add only the primitives actually used by the customer/admin workflows.
 - Rationale: Components are generated into the repository and remain editable, while providing a fast accessible baseline.
 - Tradeoffs and consequences: Adds CLI/configuration and only the dependencies selected by installed components; no prebuilt dashboard blocks or unused component catalog will be added.
+
+### Decision ID: ADR-017
+
+- Date: 2026-10-30
+- Status: Accepted
+- Context: Host port 5432 was already used by another local Postgres container, so the project database was unreachable at the documented URL.
+- Options considered: Stop the other container; change the project's published port; connect only through the Docker network.
+- Recommended approach: Publish the project Postgres on host port 5433 and update `docker-compose.yml`, `.env.example` and `.env.test.example`.
+- Rationale: Does not disturb unrelated local services and keeps the clean-clone instructions simple.
+- Tradeoffs and consequences: README and env examples must state 5433; anyone with a conflict on 5433 changes it in one place.
+
+### Decision ID: ADR-018
+
+- Date: 2026-10-30
+- Status: Accepted
+- Context: Admin retry must not reprovision successful mailboxes and a retried failed mailbox must be a new provider operation.
+- Options considered: Reset all mailboxes on retry; keep ACTIVE mailboxes and rotate only failed mailboxes' provisioning key.
+- Recommended approach: `retryOrder` locks the order row, asserts `FAILED → PENDING`, resets only FAILED mailboxes with a new `provisioning_key` and incremented `provision_attempt`, and writes the audit event in the same transaction.
+- Rationale: Row lock makes racing retries serialize (one succeeds, the other gets `409`); verified by `tests/integration/retry-and-admin.test.ts`.
+- Tradeoffs and consequences: Mailbox history of earlier failed attempts is overwritten in place (only the attempt counter and audit log remain).
+

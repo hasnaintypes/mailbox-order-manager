@@ -15,3 +15,43 @@ Chronological, factual record of AI-assisted work. Do not invent errors, tests, 
 | 2026-10-30 20:31–20:35 | Implementation planning | Convert the accepted architecture into an expedited, test-integrated execution plan before application work. | `implementation-planning` | `docs/IMPLEMENTATION_PLAN.md`; `docs/DECISIONS.md`; `docs/TEST_PLAN.md`; `docs/AI_WORKLOG.md` | User authorized use of remaining recommended decisions; accepted ADR-003, ADR-009, ADR-012, and ADR-013. Planned 17 atomic tasks across six milestones, estimated at 2h51m with roughly 21m contingency under the documented remaining budget. TD-05 later resolved (Claude Code only). | Confirmed all ADRs are Accepted, no tests remain decision-blocked, and no `src/` or `tests/` files exist. No code/test command executed. | 4 minutes measured from recorded phase timestamps. |
 | 2026-10-30 20:35–20:52 | Implementation — foundation and state machine | Begin P0 foundation, align external scaffold with accepted reliability decisions, configure shadcn/ui, generate first migration, and verify state transitions. | `implementation-planning`, `testing-review` | App shell; Drizzle schema/client/seed; migration files; auth source; state-machine test; Compose/env/config/docs | Preserved concurrently created files; corrected schema to include claim generation, audit sequence/events, per-attempt mailbox keys, and durable mock-operation ledger. Corrected seed/client export mismatch and ownership FK deletion behavior before migration application. Added accepted shadcn/ui configuration and button primitive. | `pnpm typecheck` and `pnpm lint` pass. `pnpm test:unit -- order-state-machine.test.ts`: 16 passed. `pnpm db:generate` succeeded. Compose config validates, but `postgres:17-alpine` image pull did not finish, so migration application, seed, auth smoke, and integration tests are unrun. | 17 minutes measured from recorded phase timestamps. |
 | 2026-10-30 20:44–20:49 | shadcn/ui verification and primitives | Check whether shadcn was initialized, then install the primitives required by the customer/admin screens. | None loaded; used `components.json` and shadcn CLI. | `src/components/ui/{input,label,select,card,table,badge,alert,pagination,separator,skeleton,sonner}.tsx`; `package.json`; `pnpm-lock.yaml`; `docs/AI_WORKLOG.md` | shadcn `4.23.0` was already initialized (`components.json`, `button.tsx`, `globals.css`, `cn`/`@base-ui/react` dependencies). Preserved that setup and added 11 primitives; existing `button.tsx` was unchanged. | `pnpm exec shadcn --version` -> `4.23.0`; `pnpm typecheck` -> exit 0; `pnpm exec eslint src/components/ui src/lib` -> exit 0. | 5 minutes measured from recorded phase timestamps. |
+| 2026-10-30 ~21:00–21:10 | Claude Code setup | Review skills/docs/code, write `CLAUDE.md`, `git init`, split existing work into 9 modular commits, remove Codex references. | all six project skills read | `CLAUDE.md`; docs; git history | Replaced Codex wording with Claude Code; TD-05 marked resolved. Commits carry no co-author trailer (user request). | `git log` shows 9 commits; `grep -ri codex` empty. | ~10 minutes (approximate). |
+| 2026-10-30 ~21:10–21:35 | Implementation — DB, creation tests, worker, admin, UI | Verify DB, write PostgreSQL integration tests, build provider Strategy, safe worker, retry, admin API and all screens. | `testing-review`, `reliability-review` | `src/providers`, `src/repositories/provisioning-repository.ts`, `src/services/*`, `src/worker`, `src/app/**`, `src/components/orders`, `tests/integration/*` | **Claude was wrong (1):** `dotenv -e .env.test` in `package.json` is invalid for dotenv-cli v11 (needs `dotenv run -f`); fixed after the script errored. **Claude was wrong (2):** the compose file published 5432, which another local Postgres already used, so migrations hit the wrong server; moved to 5433. **Claude was wrong (3):** `isUniqueConstraint` ignored Drizzle wrapping driver errors in `cause`; the concurrent-duplicate integration test failed with a raw 23505 and the fix walks the cause chain. | `pnpm test:integration`: 12 passed; `pnpm typecheck`, `pnpm lint`, `pnpm build` exit 0. HTTP smoke on `next start`: unauth 401, customer-on-admin 403, validation 422, create 201 then replay 200, worker produced ACTIVE and FAILED orders, admin retry 200 / repeat 409 / customer 403, retried order reached ACTIVE with a 6-event audit trail. | ~25 minutes (approximate). |
+
+## Planning approach
+
+Requirements analysis of `Task.md` first, then architecture with explicit ADRs (all reviewed and accepted before coding), then a milestone plan ordered by the brief's priority list (creation + state machine, provider + worker, admin retry/audit, customer views, tests). Reliability-critical behavior (idempotency, claiming, retry) is driven by real-PostgreSQL integration tests instead of mocks.
+
+## Key prompts
+
+1. Review the skills docs and existing code, then write an appropriate `CLAUDE.md`.
+2. `git init`, make small modular commits, remove all Codex references, no co-author trailer.
+3. Start implementing, faster: bring up the DB, then creation tests, worker, admin retry and UI.
+4. Check the project in a browser, run it end to end against `Task.md` and the docs, make sure everything works.
+5. Update the AI workflow file, the worklog and whatever other docs need it.
+
+## Where Claude Code was wrong
+
+1. `dotenv -e .env.test` in `package.json` is not valid for dotenv-cli v11; the script printed usage and exited 1. Fixed to `dotenv run -f .env.test --`.
+2. The compose file published port 5432, already taken by another local container, so migrations ran against the wrong server. Fixed by moving to 5433 (ADR-017).
+3. `isUniqueConstraint` did not see through Drizzle's wrapped `cause`, so concurrent duplicate creates threw a raw unique-violation error. The concurrency integration test exposed it; the fix walks the cause chain.
+4. Plain `pnpm test` also ran integration tests without `.env.test` and failed on missing env vars; `test` now runs unit then integration with the correct env.
+
+## Changed by hand
+
+Nothing is recorded as hand-edited yet; the user steered scope, ran the Postgres check and approved decisions. Add real hand edits here if any are made before submission.
+
+## Time per phase (approximate, from recorded timestamps)
+
+| Phase | Time |
+| --- | --- |
+| Workflow init + skills | ~4 min |
+| Requirements | ~12 min |
+| Architecture + reliability review | ~25 min |
+| Implementation planning | ~12 min |
+| Foundation, state machine, shadcn (earlier session) | ~22 min |
+| Claude Code setup + commits | ~10 min |
+| DB, tests, worker, admin, UI, smoke | ~25 min |
+| Docs, README, verification | ~15 min |
+| **Total** | **~2h05m of the 4h cap** |
+

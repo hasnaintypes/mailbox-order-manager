@@ -80,13 +80,11 @@ Patterns to keep (and name in `docs/ARCHITECTURE.md`): state machine, service + 
 - **Commits**: small, meaningful, one per verified slice; no co-author trailers. Never one giant commit. Don't push or publish without explicit approval.
 - **`docs/AI_WORKLOG.md`**: append factual rows only — phase, key prompts (3–5), real times, places Claude was wrong and how it was fixed, hand edits. Don't invent errors or times. Claude Code is the only AI tool (TD-05).
 - Update docs per the sync table in `docs/AI_WORKFLOW.md`; record meaningful tradeoffs in `docs/DECISIONS.md`; mark plan tasks VERIFIED only with command output recorded.
-- Track elapsed time against the 4h cap (~48 min was used before M1; ~17+5 min of implementation since). At the cap, stop and list unfinished work in priority order: order creation/state machine → provider abstraction/worker → admin list/retry/audit → customer views → tests.
+- Track elapsed time against the 4h cap (~2h05m used so far; see worklog). At the cap, stop and list unfinished work in priority order: order creation/state machine → provider abstraction/worker → admin list/retry/audit → customer views → tests.
 - Deliverables still owed: `README.md` (clean-clone run in <10 min, logins, tests, limitations, demo link at top), `docs/ARCHITECTURE.md` pattern section (location, why, rejected alternative), demo video.
 
 ## Current status (update as work lands)
 
-Done and verified: foundation, Drizzle schema + first migration, state machine + 16 unit tests, shadcn primitives.
-Written but **unverified**: seed, Auth.js, `create-order` service, `/api/orders` routes (typecheck/lint only).
-Not started: integration tests (`tests/integration` is empty), providers, worker, admin/retry, customer/admin pages, README.
-Postgres now runs (confirmed by the user); migration/seed/login still need to be run and recorded.
-Next step per plan: P0-02/03 (bring up DB, apply migration, seed), then P0-05 → P0-06 (audit repo + idempotent create with its integration test).
+Implemented and verified: schema/migrations/seed, state machine (16 unit tests), idempotent create, provider Strategy + durable ledger, safe worker (lease + fencing), admin list/retry/audit, login, customer and admin screens (12 integration tests; HTTP smoke on a production build).
+Remaining: demo video + README link, final delivery audit (`delivery-audit` skill), browser click-through of the UI, worklog time totals.
+Notes: Postgres is published on host port 5433 (5432 is used by another local container). Do not use broad `pkill`; stop servers by port.

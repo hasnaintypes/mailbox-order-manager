@@ -34,3 +34,13 @@ Read the selected skill before use. Skills guide work; they do not replace requi
 | Process/skill/gate changes | `AI_WORKFLOW.md` |
 
 Link to a canonical section instead of copying content. Documents describe observed work and approved decisions only.
+
+## Tooling and commit policy
+
+- **Claude Code is the only AI coding tool.** Project instructions live in `CLAUDE.md` (primary) and `AGENTS.md` (kept consistent); skills live in `.agents/skills/`.
+- Commits are small, one per verified slice, with conventional prefixes (`feat`, `fix`, `test`, `docs`, `chore`) and no co-author trailers. Nothing is pushed or published without explicit approval.
+- A slice is "verified" only with recorded command output: `pnpm typecheck`, `pnpm lint`, `pnpm test:unit`, `pnpm test:integration` (real PostgreSQL via `.env.test`), `pnpm build`.
+- Implementation steering: write or extend a PostgreSQL test for reliability behavior, implement, run, then review the diff. Wrong AI output found during review is recorded in `AI_WORKLOG.md`.
+- Local environment: Postgres is published on host port 5433; integration tests must only use `.env.test` / `mailbox_test`.
+- Gate status: requirements, architecture (ADR-001–017) and implementation plan were approved; remaining gate is the final `delivery-audit` before any submission.
+
