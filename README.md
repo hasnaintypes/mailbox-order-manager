@@ -1,6 +1,13 @@
 # Mailbox Order Manager
 
-> **Demo video (2–3 min):** [Watch on Loom](https://www.loom.com/share/d673175a00b84cf99b2f06261cc7e783)
+<div>
+  <a href="https://www.loom.com/share/d673175a00b84cf99b2f06261cc7e783">
+    <p>Mailbox Order Manager - 30 October 2026 - Watch Video</p>
+  </a>
+  <a href="https://www.loom.com/share/d673175a00b84cf99b2f06261cc7e783">
+    <img width="300" alt="Demo video thumbnail" src="https://www.loom.com/v1/videos/d673175a00b84cf99b2f06261cc7e783/thumbnail.gif">
+  </a>
+</div>
 
 Internal tool for ordering pre-warmed Google and Microsoft mailboxes. Next.js (App Router, strict TypeScript) + PostgreSQL (Drizzle) with a separate background worker.
 
