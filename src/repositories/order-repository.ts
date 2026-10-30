@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import {
@@ -8,6 +8,7 @@ import {
   orders,
 } from "@/db/schema";
 import type { DbExecutor } from "@/db/types";
+import type { OrderStatus, ProviderName } from "@/domain/orders/status";
 
 export function findIdempotencyRecord(
   executor: DbExecutor,
@@ -60,4 +61,29 @@ export function listOrderAuditEvents(orderId: string) {
     .from(orderAuditLogs)
     .where(eq(orderAuditLogs.orderId, orderId))
     .orderBy(asc(orderAuditLogs.sequence));
+}
+
+export async function listOrdersForAdmin(filters: {
+  status?: OrderStatus;
+  provider?: ProviderName;
+  page: number;
+  pageSize: number;
+}) {
+  const where = and(
+    filters.status ? eq(orders.status, filters.status) : undefined,
+    filters.provider ? eq(orders.provider, filters.provider) : undefined,
+  );
+
+  const [items, [counted]] = await Promise.all([
+    db
+      .select()
+      .from(orders)
+      .where(where)
+      .orderBy(desc(orders.createdAt), desc(orders.id))
+      .limit(filters.pageSize)
+      .offset((filters.page - 1) * filters.pageSize),
+    db.select({ total: count() }).from(orders).where(where),
+  ]);
+
+  return { items, total: counted?.total ?? 0 };
 }
