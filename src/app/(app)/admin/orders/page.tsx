@@ -7,16 +7,10 @@ import { PageHero } from "@/components/layout/page-hero";
 import { AdminFilters } from "@/components/orders/admin-filters";
 import { EmptyState } from "@/components/orders/empty-state";
 import { OrderTable } from "@/components/orders/order-table";
+import { Pager } from "@/components/orders/pager";
 import { RetryButton } from "@/components/orders/retry-button";
 import { StatCards } from "@/components/orders/stat-cards";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { greeting, nameFromEmail } from "@/lib/format";
 import { adminOrderFiltersSchema } from "@/lib/validation";
 import { getOrderStatusCounts, listAdminOrders } from "@/services/admin-orders";
@@ -32,10 +26,6 @@ export default async function AdminOrdersPage({
   const cleaned = Object.fromEntries(Object.entries(await searchParams).filter(([, value]) => value));
   const parsed = adminOrderFiltersSchema.safeParse({ pageSize: 10, ...cleaned });
   const filters = parsed.success ? parsed.data : { page: 1, pageSize: 10 };
-  const [result, statuses] = await Promise.all([listAdminOrders(filters), getOrderStatusCounts()]);
-  const inFlight = statuses.some((s) => s === "PENDING" || s === "PROVISIONING");
-  const failed = statuses.filter((s) => s === "FAILED").length;
-
   const href = (page: number) => {
     const query = new URLSearchParams();
     if (filters.status) query.set("status", filters.status);
@@ -43,6 +33,14 @@ export default async function AdminOrdersPage({
     query.set("page", String(page));
     return `/admin/orders?${query}`;
   };
+  const [result, statuses] = await Promise.all([listAdminOrders(filters), getOrderStatusCounts()]);
+
+  if (result.page > result.totalPages) {
+    redirect(href(result.totalPages));
+  }
+  const inFlight = statuses.some((s) => s === "PENDING" || s === "PROVISIONING");
+  const failed = statuses.filter((s) => s === "FAILED").length;
+
 
   return (
     <>
@@ -75,17 +73,10 @@ export default async function AdminOrdersPage({
           />
         )}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t px-5 py-3 text-sm text-muted-foreground">
-          <span>Page {result.page} of {result.totalPages}</span>
-          <Pagination className="mx-0 w-auto">
-            <PaginationContent>
-              {result.page > 1 ? (
-                <PaginationItem><PaginationPrevious href={href(result.page - 1)} /></PaginationItem>
-              ) : null}
-              {result.page < result.totalPages ? (
-                <PaginationItem><PaginationNext href={href(result.page + 1)} /></PaginationItem>
-              ) : null}
-            </PaginationContent>
-          </Pagination>
+          <span>
+            Page {result.page} of {result.totalPages} · showing {result.items.length} of {result.total}
+          </span>
+          <Pager page={result.page} totalPages={result.totalPages} href={href} />
         </div>
       </Card>
     </>
