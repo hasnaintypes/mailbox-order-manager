@@ -41,7 +41,7 @@ export function LoginForm({ className, action, error, ...props }: LoginFormProps
   return (
     <form action={action} className={cn("flex flex-col gap-6", className)} {...props}>
       <FieldGroup>
-        <div className="flex flex-col gap-1 text-center">
+        <div className="flex flex-col gap-1 text-left">
           <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
           <p className="text-sm text-balance text-muted-foreground">
             Sign in to manage your mailbox orders
@@ -119,7 +119,7 @@ export function LoginForm({ className, action, error, ...props }: LoginFormProps
             </Button>
           ))}
         </div>
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-left text-xs text-muted-foreground">
           Fills the seeded credentials — then press Sign in.
         </p>
       </FieldGroup>

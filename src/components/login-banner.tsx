@@ -31,8 +31,8 @@ export function LoginBanner() {
         className="absolute inset-0 opacity-40 [background-image:linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]"
       />
 
-      <div className="relative flex h-full flex-col items-end justify-between p-12 text-right">
-        <div className="flex flex-row-reverse items-center gap-2 text-lg font-semibold">
+      <div className="relative flex h-full flex-col items-start justify-between p-12 text-left">
+        <div className="flex items-center gap-2 text-lg font-semibold">
           <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <InboxIcon className="size-4" />
           </span>
@@ -41,7 +41,7 @@ export function LoginBanner() {
 
         <div className="w-full max-w-md space-y-8">
           <div className="space-y-4">
-            <span className="ml-auto flex w-fit items-center gap-2 rounded-full border bg-card/60 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
+            <span className="flex w-fit items-center gap-2 rounded-full border bg-card/60 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
               <span className="size-1.5 rounded-full bg-ring" /> Live provisioning
             </span>
             <h2 className="text-4xl leading-[1.1] font-semibold tracking-tight text-balance">
@@ -49,7 +49,7 @@ export function LoginBanner() {
               <br />
               <span className="text-ring">ordered and tracked</span> in one place.
             </h2>
-            <p className="ml-auto max-w-sm text-sm text-muted-foreground">
+            <p className="max-w-sm text-sm text-muted-foreground">
               Place an order, watch each mailbox come online, and keep a full audit trail of every
               status change.
             </p>
@@ -90,7 +90,7 @@ export function LoginBanner() {
             </div>
 
             {/* floating audit card */}
-            <div className="absolute -bottom-10 -left-8 w-56 rounded-xl border bg-card/90 p-3 text-left shadow-xl backdrop-blur">
+            <div className="absolute -bottom-10 -right-8 w-56 rounded-xl border bg-card/90 p-3 text-left shadow-xl backdrop-blur">
               <p className="mb-2 flex items-center gap-1.5 text-xs font-medium">
                 <ShieldCheckIcon className="size-3.5 text-ring" /> Audit log
               </p>
@@ -105,17 +105,17 @@ export function LoginBanner() {
             </div>
 
             {/* floating failure chip */}
-            <div className="absolute -top-4 -right-4 flex items-center gap-1.5 rounded-full border bg-card/90 px-3 py-1.5 text-xs shadow-lg backdrop-blur">
+            <div className="absolute -top-4 -left-4 flex items-center gap-1.5 rounded-full border bg-card/90 px-3 py-1.5 text-xs shadow-lg backdrop-blur">
               <XCircleIcon className="size-3.5 text-destructive" /> Failed? One-click retry
             </div>
           </div>
         </div>
 
-        <ul className="flex flex-row-reverse items-center gap-6 text-xs text-muted-foreground">
-          <li className="flex flex-row-reverse items-center gap-1.5">
+        <ul className="flex items-center gap-6 text-xs text-muted-foreground">
+          <li className="flex items-center gap-1.5">
             <ZapIcon className="size-3.5 text-ring" /> Google & Microsoft
           </li>
-          <li className="flex flex-row-reverse items-center gap-1.5">
+          <li className="flex items-center gap-1.5">
             <ShieldCheckIcon className="size-3.5 text-ring" /> Idempotent orders
           </li>
         </ul>

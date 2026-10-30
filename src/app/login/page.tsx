@@ -36,7 +36,7 @@ export default async function LoginPage({
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex justify-center gap-2 md:justify-start">
+        <div className="flex gap-2">
           <span className="flex items-center gap-2 font-medium">
             <span className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <InboxIcon className="size-4" />
